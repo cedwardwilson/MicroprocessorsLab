@@ -11,7 +11,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	bsf	EECON1, EEPGD 	; access Flash program memory
 	goto	start
 	; ******* My data and where to put it in RAM *
-myTable data	"This is just some data"
+myTable data	"Becky Says Hi To Chris"
 	constant 	myArray=0x400	; Address in RAM for data
 	constant 	counter=0x10	; Address of counter variable
 	; ******* Main programme *********************
