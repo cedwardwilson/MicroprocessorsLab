@@ -2,33 +2,40 @@
 	
 	code
 	org 0x0
-	goto	setup
+	goto	start
 	
 	org 0x100		    ; Main code starts here at address 0x100
 
-	; ******* Programme FLASH read Setup Code ****  
-setup	bcf	EECON1, CFGS	; point to Flash program memory  
-	bsf	EECON1, EEPGD 	; access Flash program memory
-	goto	start
-	; ******* My data and where to put it in RAM *
-myTable data	"Becky Says Hi To Chris"
-	constant 	myArray=0x400	; Address in RAM for data
-	constant 	counter=0x10	; Address of counter variable
-	; ******* Main programme *********************
-start 	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
-	movlw	upper(myTable)	; address of data in PM
-	movwf	TBLPTRU		; load upper bits to TBLPTRU
-	movlw	high(myTable)	; address of data in PM
-	movwf	TBLPTRH		; load high byte to TBLPTRH
-	movlw	low(myTable)	; address of data in PM
-	movwf	TBLPTRL		; load low byte to TBLPTRL
-	movlw	.22		; 22 bytes to read
-	movwf 	counter		; our counter register
-loop 	tblrd*+			; move one byte from PM to TABLAT, increment TBLPRT
-	movff	TABLAT, POSTINC0	; move read data from TABLAT to (FSR0), increment FSR0	
-	decfsz	counter		; count down to zero
-	bra	loop		; keep going until finished
-	
-	goto	0
+start
+	movlw	0xff
+	movwf	0x20, ACCESS
+	movlw	0xff
+	movwf	0x21, ACCESS
+	movlw	0xff
+	movwf	TRISD, ACCESS
+	movlw 	0x0
+	movwf	TRISC, ACCESS	    ; Port C all outputs
+	bra 	test
+loop	movff 	0x10, PORTC
+	incf 	0x10, W, ACCESS
+test	movwf	0x10, ACCESS	    ; Test for end of loop condition
+	call	delay
+	;movlw	0xf
+	movf	PORTD, W, ACCESS
+	cpfsgt 	0x10, ACCESS
+	bra 	loop		    ; Not yet finished goto start of loop again
+	goto 	0x0		    ; Re-run program from start
 
+delay	call	delay2
+	decfsz	0x20, f, ACCESS
+	bra	delay
+	movlw	0xff
+	movwf	0x20, ACCESS
+	return
+delay2	decfsz	0x21, f, ACCESS
+	bra	delay2	
+	movlw	0xff
+	movwf	0x21, ACCESS
+	return
+	
 	end
