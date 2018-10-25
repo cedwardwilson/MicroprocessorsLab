@@ -87,8 +87,7 @@ Keypad
 	movwf	PORTH
 	
 Translator  
-	movlw   1
-	movwf   BSR, ACCESS
+	movlb	1
 	movlw	'1'
 	movwf	0x77, BANKED
 	movlw	'2'
@@ -119,6 +118,8 @@ Translator
 	movwf	0x7E, BANKED
 	movlw	'#'
 	movwf	0xDE, BANKED
+	movf	0xEE, W, BANKED
+	movwf	0x0
 	return
 	
 
