@@ -6,6 +6,7 @@
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res	1   ; reserve one byte for a counter variable	;res 1
 delay_count res 1   ; reserve one byte for counter in the delay routine	;res 1
+tmpval	    res 1
 
 tables	udata	0x400    ; reserve data anywhere in RAM (here at 0x400)
 myArray res 0x80    ; reserve 128 bytes for message data	;res 0x80
@@ -27,7 +28,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	goto	start
 	
 	; ******* Main programme ****************************************
-start	call	Keypad
+start	call	Translator
 	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
 	movlw	upper(myTable)	; address of data in PM
 	movwf	TBLPTRU		; load upper bits to TBLPTRU
@@ -50,18 +51,9 @@ loop 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	movlw	myTable_l	; output message to UART
 	lfsr	FSR2, myArray
 	call	UART_Transmit_Message
-	
-Clear	movlw	0xff
-	movwf	TRISD
-	movlw	0x00
-	cpfsgt	PORTD, ACCESS
-	bra	Clear
-	call	LCD_Clear
+	bra	Keypad
 
-goto	$		; goto current line in code
-	
 Keypad	
-	call	Translator
 	banksel	PADCFG1
 	bsf	PADCFG1, REPU, BANKED
 	movlb	0x0
@@ -73,7 +65,6 @@ Keypad
 	call	delay
 	movf	PORTE, W, ACCESS
 	movwf	0x02, ACCESS
-	
 	movlw	0xf0
 	movwf	TRISE
 	call	delay
@@ -81,48 +72,89 @@ Keypad
 	call	delay
 	movf	PORTE, W, ACCESS
 	addwf	0x02
-		
 	movf	0x02, W, ACCESS
 	clrf	TRISH
+	movff	PLUSW1, tmpval
+	call	delay
+	movf	tmpval, W
 	movwf	PORTH
+	bra	Clear
 	
 Translator  
-	movlb	1
+	movlb	5
+	lfsr	FSR1, 0x580
 	movlw	'1'
-	movwf	0x77, BANKED
+	movwf	tmpval
+	movlw	0x77
+	movff	tmpval,PLUSW1
 	movlw	'2'
-	movwf	0xB7, BANKED
+	movwf	tmpval
+	movlw	0xB7
+	movff	tmpval,PLUSW1
 	movlw	'3'
-	movwf	0xD7, BANKED
+	movwf	tmpval
+	movlw	0xD7
+	movff	tmpval,PLUSW1
 	movlw	'4'
-	movwf	0x7B, BANKED
+	movwf	tmpval
+	movlw	0x7B
+	movff	tmpval,PLUSW1
 	movlw	'5'
-	movwf	0xBB, BANKED
+	movwf	tmpval
+	movlw	0xBB 
+	movff	tmpval,PLUSW1
 	movlw	'6'
-	movwf	0xDB, BANKED
+	movwf	tmpval
+	movlw	0xDB
+	movff	tmpval,PLUSW1
 	movlw	'7'
-	movwf	0x7D, BANKED
+	movwf	tmpval
+	movlw	0x7D
+	movff	tmpval,PLUSW1
 	movlw	'8'
-	movwf	0xBD, BANKED
+	movwf	tmpval
+	movlw	0xBD
+	movff	tmpval,PLUSW1
 	movlw	'9'
-	movwf	0xDD, BANKED
+	movwf	tmpval
+	movlw	0xDD
+	movff	tmpval,PLUSW1
 	movlw	'A'
-	movwf	0xE7, BANKED
+	movwf	tmpval
+	movlw	0xE7
+	movff	tmpval,PLUSW1
 	movlw	'B'
-	movwf	0xEB, BANKED
+	movwf	tmpval
+	movlw	0xEB
+	movff	tmpval,PLUSW1
 	movlw	'C'
-	movwf	0xED, BANKED
+	movwf	tmpval
+	movlw	0xED
+	movff	tmpval,PLUSW1
 	movlw	'D'
-	movwf	0xEE, BANKED
+	movwf	tmpval
+	movlw	0xEE
+	movff	tmpval,PLUSW1
 	movlw	'*'
-	movwf	0x7E, BANKED
+	movwf	tmpval
+	movlw	0x7E
+	movff	tmpval,PLUSW1
 	movlw	'#'
-	movwf	0xDE, BANKED
-	movf	0xEE, W, BANKED
-	movwf	0x0
+	movwf	tmpval
+	movlw	0xDE
+	movff	tmpval,PLUSW1
+	;movf	0xEE, W, BANKED
+	;movwf	0x0
 	return
 	
-
+Clear	movlw	0xff
+	movwf	TRISD
+	movlw	0x00
+	cpfsgt	PORTD, ACCESS
+	bra	Clear
+	call	LCD_Clear
+	
+goto	$		; goto current line in code
 
 	
 
